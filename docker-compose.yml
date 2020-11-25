@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  webapitcc:
+    image: ${DOCKER_REGISTRY-}webapitcc
+    build:
+      context: .\WebAPITCC
+      dockerfile: Dockerfile
