@@ -24,6 +24,20 @@ namespace WebAPITCC.Controllers
             return cliente.SelecionaCliente();
         }
 
+        [HttpGet]
+        [ActionName("validateLogin")]
+        public Cliente validateLogin(string user, string pass)
+        {
+            return cliente.SelecionaClienteUser(user, pass);
+        }
+
+        [HttpGet]
+        [ActionName("validateRegisterByEmail")]
+        public Cliente validateRegisterByEmail(string email)
+        {
+            return cliente.ValidaLogin(email);
+        }
+
         // POST api/values
         public Boolean Post([FromBody] Cliente mCliente)
         {
@@ -32,7 +46,16 @@ namespace WebAPITCC.Controllers
                 return false;
             }
 
-            cliente.InsertCliente(mCliente);
+            try
+            {
+                cliente.InsertCliente(mCliente);
+                return true;
+            }
+            catch(Exception e)
+            {
+                return false;
+            }
+           
             return true;
         }
 

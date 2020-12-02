@@ -17,16 +17,16 @@ namespace WebAPITCC.Controllers
         {
             return produto.SelecionaProduto();
         }
-        public Boolean Post([FromBody] Produto_pedido produtoPed)
-        {
-            if (produtoPed == null)
-            {
-                return false;
-            }
+        //public Boolean Post([FromBody] Produto_pedido produtoPed)
+        //{
+        //    if (produtoPed == null)
+        //    {
+        //        return false;
+        //    }
 
-            produto_Pedido.InsertProdPed(produtoPed);
-            return true;
-        }
+        //    produto_Pedido.InsertProdPed(produtoPed);
+        //    return true;
+        //}
 
     }
 }

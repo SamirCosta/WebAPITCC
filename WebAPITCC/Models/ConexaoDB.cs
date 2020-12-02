@@ -9,7 +9,7 @@ namespace WebAPITCC.Models
         public ConexaoDB()
         {
             //conexao = new MySqlConnection("server=localhost;user id=root;password=12345678;database=db_REST");
-            conexao = new MySqlConnection("Database=db_REST; Data Source=webapitccserver.mysql.database.azure.com; User Id=adminSars@webapitccserver; Password=WebAPITCC1");
+            conexao = new MySqlConnection("Database=db_REST; Data Source=webapitccserver.mysql.database.azure.com; User Id=tecBridge@webapitccserver; Password=WebAPITCC1");
             conexao.Open();
         }
 

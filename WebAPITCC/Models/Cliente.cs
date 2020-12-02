@@ -2,13 +2,15 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Drawing;
+using System.IO;
+using System.Web;
 
 namespace WebAPITCC.Models
 {
     public class Cliente
     {
         private ConexaoDB db;
-
 
         [Required(ErrorMessage = "O campo Id do cliente é requerido.")]
         [Display(Name = "Id do cliente")]
@@ -57,16 +59,14 @@ namespace WebAPITCC.Models
         [Display(Name = "Quantidade de pontos")]
         public float QtdPontos { get; set; }
 
-
         public string Imagem { get; set; }
-
-        //   public HttpPostedFileBase Imagecli { get; set; } //ou string
+        public HttpPostedFile Imagecli { get; set; } //ou string
 
 
 
         public void InsertCliente(Cliente cliente)
         {
-            string strQuery = string.Format("CALL sp_InsEnderecoCliUsu ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}','{10}','{11}','{12}','{13}','{14}');", null, cliente.User.UsuarioText, cliente.User.Senha, cliente.Endereco.UF, cliente.Endereco.Cidade, cliente.Endereco.CEP, cliente.Endereco.Logra, cliente.Endereco.Bairro, cliente.Comp, cliente.NumEdif, cliente.NomeCli, cliente.CPF, cliente.EmailCli, cliente.CelCli, cliente.Endereco.Estado);
+            string strQuery = string.Format("CALL sp_InsEnderecoCliUsu ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}','{10}','{11}','{12}');", cliente.Imagem, cliente.User.UsuarioText, cliente.User.Senha, cliente.Endereco.Cidade, cliente.Endereco.CEP, cliente.Endereco.Logra, cliente.Endereco.Bairro, cliente.Comp, cliente.NumEdif, cliente.NomeCli, cliente.CPF, cliente.EmailCli, cliente.CelCli);
 
             using (db = new ConexaoDB())
             {
@@ -76,7 +76,7 @@ namespace WebAPITCC.Models
 
         public void UpdateCliente(Cliente cliente)
         {
-            string strQuery = string.Format("CALL sp_AtuaCliUsuEnd('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}','{10}','{11}','{12}','{13}','{14}');", cliente.IdCli, cliente.CPF, cliente.Endereco.CEP, cliente.Endereco.Logra, cliente.Endereco.Bairro, cliente.Endereco.Cidade, cliente.Endereco.Estado, cliente.Endereco.UF, cliente.User.UsuarioText, cliente.User.Senha, cliente.NumEdif, cliente.NomeCli, cliente.EmailCli, cliente.CelCli, cliente.Comp);
+            string strQuery = string.Format("CALL sp_AtuaCliUsuEnd('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}','{10}','{11}','{12}');", cliente.IdCli, cliente.CPF, cliente.Endereco.CEP, cliente.Endereco.Logra, cliente.Endereco.Bairro, cliente.Endereco.Cidade, cliente.User.UsuarioText, cliente.User.Senha, cliente.NumEdif, cliente.NomeCli, cliente.EmailCli, cliente.CelCli, cliente.Comp);
 
             using (db = new ConexaoDB())
             {
@@ -94,26 +94,130 @@ namespace WebAPITCC.Models
                 var clienteList = new List<Cliente>();
                 while (registros.Read())
                 {
+                    String idcli = registros["IdCli"].ToString();
+                    String celcli = registros["CelCli"].ToString();
+                    String numedif = registros["NumEdif"].ToString();
+                    String qtdpontos = registros["QtdPontos"].ToString();
+                    String cepString = registros["CEP"].ToString();
+                    decimal cep = cepString.Equals("") ? 0m : decimal.Parse(cepString);
                     var ClienteTemporario = new Cliente
                     {
-                        IdCli = int.Parse(registros["IdCli"].ToString()),
+                        IdCli = idcli.Equals("") ? 0 : int.Parse(idcli),
                         NomeCli = registros["NomeCli"].ToString(),
                         CPF = registros["CPF"].ToString(),
                         EmailCli = registros["EmailCli"].ToString(),
-                        Endereco = new Endereco().RetornaPorCEP(decimal.Parse(registros["CEP"].ToString())),
-                        CelCli = Convert.ToInt64(registros["CelCli"].ToString()),
+                        Endereco = new Endereco().RetornaPorCEP(cep),
+                        CelCli = celcli.Equals("") ? 0 : Convert.ToInt64(celcli),
                         Comp = registros["Comp"].ToString(),
-                        NumEdif = int.Parse(registros["NumEdif"].ToString()),
-                        QtdPontos = float.Parse(registros["QtdPontos"].ToString()),
+                        NumEdif = numedif.Equals("") ? 0 : int.Parse(numedif),
+                        QtdPontos = qtdpontos.Equals("") ? 0f : float.Parse(qtdpontos),
                         User = new Usuario().RetornaPorIdUsuario(int.Parse(registros["IdUsuario"].ToString())),
-                        //  Imagem = registros["imagecli"].ToString()
+                        Imagem = registros["imagecli"].ToString()
                     };
-
-
 
                     clienteList.Add(ClienteTemporario);
                 }
                 return clienteList;
+            }
+        }
+
+        public Cliente SelecionaClienteUser(string user, string pass)
+        {
+            using (db = new ConexaoDB())
+            {
+                string StrQuery = string.Format("select * from tbcliente where IdUsuario = (select IdUsuario from tbusuario where Usuario = '{0}' and Senha = '{1}');", user, pass);
+                MySqlDataReader registros = db.RetornaRegistro(StrQuery);
+                Cliente clienteListando = null;
+                if (registros.HasRows)
+                {
+                    while (registros.Read())
+                    {
+                        string idcli = registros["IdCli"].ToString();
+                        string celcli = registros["CelCli"].ToString();
+                        string numedif = registros["NumEdif"].ToString();
+                        string qtdpontos = registros["QtdPontos"].ToString();
+                        string cepString = registros["CEP"].ToString();
+                        decimal cep = cepString.Equals("") ? 0m : decimal.Parse(cepString);
+                        clienteListando = new Cliente
+                        {
+                            IdCli = idcli.Equals("") ? 0 : int.Parse(idcli),
+                            NomeCli = registros["NomeCli"].ToString(),
+                            CPF = registros["CPF"].ToString(),
+                            EmailCli = registros["EmailCli"].ToString(),
+                            Endereco = new Endereco().RetornaPorCEP(cep),
+                            CelCli = celcli.Equals("") ? 0 : Convert.ToInt64(celcli),
+                            Comp = registros["Comp"].ToString(),
+                            NumEdif = numedif.Equals("") ? 0 : int.Parse(numedif),
+                            QtdPontos = qtdpontos.Equals("") ? 0f : float.Parse(qtdpontos),
+                            User = new Usuario().RetornaPorIdUsuario(int.Parse(registros["IdUsuario"].ToString())),
+                            Imagem = registros["imagecli"].ToString()
+
+                        };
+                    }
+                    return clienteListando;
+                }
+
+                return null;
+            }
+        }
+
+        //public bool ValidaLogin(string email)
+        //{
+        //    using (db = new ConexaoDB())
+        //    {
+        //        string StrQuery = string.Format("select * from tbcliente where EmailCli = '{0}';", email);
+        //        MySqlDataReader registros = db.RetornaRegistro(StrQuery);
+        //        if (registros.HasRows)
+        //        {
+        //            return true;
+        //        }
+        //        else
+        //        {
+        //            return false;
+        //        }
+
+        //    }
+
+        //}
+
+        public Cliente ValidaLogin(string email)
+        {
+            using (db = new ConexaoDB())
+            {
+                //string StrQuery = string.Format("select * from tbcliente where IdUsuario = (select IdUsuario from tbusuario where Usuario = '{0}' and Senha = '{1}');", user, pass);
+                string StrQuery = string.Format("select * from tbcliente where EmailCli = '{0}';", email); 
+                MySqlDataReader registros = db.RetornaRegistro(StrQuery);
+                Cliente clienteListando = null;
+                if (registros.HasRows)
+                {
+                    while (registros.Read())
+                    {
+                        string idcli = registros["IdCli"].ToString();
+                        string celcli = registros["CelCli"].ToString();
+                        string numedif = registros["NumEdif"].ToString();
+                        string qtdpontos = registros["QtdPontos"].ToString();
+                        string cepString = registros["CEP"].ToString();
+                        decimal cep = cepString.Equals("") ? 0m : decimal.Parse(cepString);
+                        clienteListando = new Cliente
+                        {
+                            IdCli = idcli.Equals("") ? 0 : int.Parse(idcli),
+                            NomeCli = registros["NomeCli"].ToString(),
+                            CPF = registros["CPF"].ToString(),
+                            EmailCli = registros["EmailCli"].ToString(),
+                            Endereco = new Endereco().RetornaPorCEP(cep),
+                            CelCli = celcli.Equals("") ? 0 : Convert.ToInt64(celcli),
+                            Comp = registros["Comp"].ToString(),
+                            NumEdif = numedif.Equals("") ? 0 : int.Parse(numedif),
+                            QtdPontos = qtdpontos.Equals("") ? 0f : float.Parse(qtdpontos),
+                            User = new Usuario().RetornaPorIdUsuario(int.Parse(registros["IdUsuario"].ToString())),
+                            Imagem = registros["imagecli"].ToString()
+
+                        };
+                    }
+                    return clienteListando;
+                }
+
+                return null;
             }
         }
 
@@ -188,6 +292,34 @@ namespace WebAPITCC.Models
                 return clienteListando;
             }
 
+        }
+
+        //public static string UparImagem(HttpPostedFile file)
+        //{
+        //    string path = string.Empty;
+        //    string pic = string.Empty;
+
+        //    if(file != null)
+        //    {
+        //        pic = Path.GetFileName(file.FileName);
+        //        path = Path.Combine(HttpContext.Current.Server.MapPath("~/Content/Photos"), pic);
+        //        file.SaveAs(path);
+        //        using(MemoryStream ms = new MemoryStream())
+        //        {
+        //            file.InputStream.CopyTo(ms);
+        //            byte[] array = ms.GetBuffer();
+        //        }
+        //    }
+
+        //    return pic;
+        //}
+
+
+        public Image byteArrayToImage(byte[] byteArrayIn)
+        {
+            MemoryStream ms = new MemoryStream(byteArrayIn);
+            Image returnImage = Image.FromStream(ms);
+            return returnImage;
         }
 
     }
