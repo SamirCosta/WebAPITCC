@@ -98,15 +98,15 @@ namespace WebAPITCC.Models
                     String celcli = registros["CelCli"].ToString();
                     String numedif = registros["NumEdif"].ToString();
                     String qtdpontos = registros["QtdPontos"].ToString();
-                    String cepString = registros["CEP"].ToString();
-                    decimal cep = cepString.Equals("") ? 0m : decimal.Parse(cepString);
+                    //String cepString = registros["CEP"].ToString();
+                    //decimal cep = cepString.Equals("") ? 0m : decimal.Parse(cepString);
                     var ClienteTemporario = new Cliente
                     {
                         IdCli = idcli.Equals("") ? 0 : int.Parse(idcli),
                         NomeCli = registros["NomeCli"].ToString(),
                         CPF = registros["CPF"].ToString(),
                         EmailCli = registros["EmailCli"].ToString(),
-                        Endereco = new Endereco().RetornaPorCEP(cep),
+                        Endereco = new Endereco().RetornaPorCEP(registros["CEP"].ToString()),
                         CelCli = celcli.Equals("") ? 0 : Convert.ToInt64(celcli),
                         Comp = registros["Comp"].ToString(),
                         NumEdif = numedif.Equals("") ? 0 : int.Parse(numedif),
@@ -144,7 +144,7 @@ namespace WebAPITCC.Models
                             NomeCli = registros["NomeCli"].ToString(),
                             CPF = registros["CPF"].ToString(),
                             EmailCli = registros["EmailCli"].ToString(),
-                            Endereco = new Endereco().RetornaPorCEP(cep),
+                            Endereco = new Endereco().RetornaPorCEP(registros["CEP"].ToString()),
                             CelCli = celcli.Equals("") ? 0 : Convert.ToInt64(celcli),
                             Comp = registros["Comp"].ToString(),
                             NumEdif = numedif.Equals("") ? 0 : int.Parse(numedif),
@@ -204,7 +204,7 @@ namespace WebAPITCC.Models
                             NomeCli = registros["NomeCli"].ToString(),
                             CPF = registros["CPF"].ToString(),
                             EmailCli = registros["EmailCli"].ToString(),
-                            Endereco = new Endereco().RetornaPorCEP(cep),
+                            Endereco = new Endereco().RetornaPorCEP(registros["CEP"].ToString()),
                             CelCli = celcli.Equals("") ? 0 : Convert.ToInt64(celcli),
                             Comp = registros["Comp"].ToString(),
                             NumEdif = numedif.Equals("") ? 0 : int.Parse(numedif),
@@ -237,7 +237,7 @@ namespace WebAPITCC.Models
                         NomeCli = registros["NomeCli"].ToString(),
                         CPF = registros["CPF"].ToString(),
                         EmailCli = registros["EmailCli"].ToString(),
-                        Endereco = new Endereco().RetornaPorCEP(decimal.Parse(registros["CEP"].ToString())),
+                        Endereco = new Endereco().RetornaPorCEP(registros["CEP"].ToString()),
                         CelCli = Convert.ToInt64(registros["CelCli"].ToString()),
                         Comp = registros["Comp"].ToString(),
                         NumEdif = int.Parse(registros["NumEdif"].ToString()),

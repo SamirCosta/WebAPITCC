@@ -62,16 +62,21 @@ namespace WebAPITCC.Controllers
         // PUT api/values/5
         [HttpPut]
         [ActionName("updateClient")]
-        public Boolean Put([FromBody] Cliente item)
+        public Boolean Put([FromBody] Cliente cliente)
         {
-            if (item == null)
+            if (cliente == null)
             {
                 return false;
             }
-
-            cliente.UpdateCliente(item);
-
-            return true;
+            try
+            {
+                cliente.UpdateCliente(cliente);
+                return true;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
         }
 
         // DELETE api/values/5
